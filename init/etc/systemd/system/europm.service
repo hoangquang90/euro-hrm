@@ -1,0 +1,25 @@
+[Unit]
+Description=iportal-fdm
+Documentation=http://iportal-fdm.onepay.vn/en/docs/
+After=network.target remote-fs.target nss-lookup.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+
+Environment="LD_LIBRARY_PATH=/usr/lib/oracle/19.11/client64/lib:$LD_LIBRARY_PATH"
+ExecStart=/opt/iportal-fdm/iportal-fdm
+
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=iportal-fdm
+
+WorkingDirectory=/opt/iportal-fdm
+
+User=iportal-fdm
+Group=iportal-fdm
+LimitNOFILE=20000
+
+[Install]
+WantedBy=multi-user.target

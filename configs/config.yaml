@@ -1,0 +1,16 @@
+server:
+  port: 8433
+api_prefix: "/api/v1/"
+mb:
+  privateKey: "mb.key"
+  publicKey: "mb.pub"
+accounts:
+  - customerAcc: MBION1234561
+    customerName: Nguyen Van A
+    rate: VND
+  - customerAcc: ION999999999
+    customerName: Le Thi B
+    rate: USD
+  - customerAcc: ABCD1234567
+    customerName: Tran C
+    rate: VND

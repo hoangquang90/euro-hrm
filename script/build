@@ -1,0 +1,7 @@
+go clean
+rm -fr target
+go build -v -a -o target/europm
+cp -R init target
+cp -R resources target
+cp -R docs target
+cp -R configs target

@@ -1,0 +1,5 @@
+go.mod
+go.sum
+europm.code-workspace
+__debug_bin*
+europm
