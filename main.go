@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"europm/internal/config"
+	"europm/internal/db/dbhrm"
 	"europm/internal/logging"
 	"europm/internal/server"
 	"fmt"
@@ -39,7 +40,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("can't initialize logger: %v", err)
 	}
-
+	//DB =======================
+	err = dbhrm.Init()
+	if err != nil {
+		log.Fatalf("can't initialize db %v", err)
+	}
+	//==========================
 	// HTTP Server ======================================
 	err = server.Start()
 	if err != nil {

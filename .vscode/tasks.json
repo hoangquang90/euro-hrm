@@ -2,7 +2,7 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Build Go Linux (PowerShell)",
+      "label": "Build Go HRM Linux (PowerShell)",
       "type": "shell",
       "command": "powershell.exe",
       "args": [

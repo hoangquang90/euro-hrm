@@ -1,16 +1,14 @@
 server:
-  port: 8433
+  port: 8434
 api_prefix: "/api/v1/"
-mb:
-  privateKey: "mb.key"
-  publicKey: "mb.pub"
-accounts:
-  - customerAcc: MBION1234561
-    customerName: Nguyen Van A
-    rate: VND
-  - customerAcc: ION999999999
-    customerName: Le Thi B
-    rate: USD
-  - customerAcc: ABCD1234567
-    customerName: Tran C
-    rate: VND
+db:
+  postgres:
+    url: "127.0.0.1:5432"
+    user: "postgres"
+    password: "postgres"
+    database: "euro"
+    maxPoolSize: 10
+    minPoolSize: 1
+    poolName: "EURO_HRM_POOL"
+file_pathhrm: "/home/sysadmin/FileHRM/"
+  

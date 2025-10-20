@@ -2,8 +2,8 @@ package server
 
 import (
 	"context"
-	"europm/internal/bank"
 	"europm/internal/config"
+	"europm/internal/hrm"
 	"fmt"
 	"log"
 	"net/http"
@@ -34,8 +34,26 @@ func Start() (err error) {
 	// Group các API con → "/api/v1/..."
 	rg := r.Group(prefix + "/")
 	{
-		rg.GET("account", bank.CallAccount)
-		rg.POST("order-update", bank.OrderUpdateHandler)
+		rg.GET("employee", hrm.SearchEmployee)
+		rg.GET("employee/:id", hrm.SearchEmployeeByID)
+		rg.GET("employee/certificates/:id", hrm.SearchCertificatesByID)
+		rg.GET("employee/relatives/:id", hrm.SearchRelativesByID)
+		rg.GET("employee/emergency_contacts/:id", hrm.SearchEmergencyContactsByID)
+		rg.GET("employee/salaries/:id", hrm.SearchSalariesByID)
+		rg.GET("employee/career_histories/:id", hrm.SearchCareerHistoriesByID)
+		rg.GET("employee/performance_evaluations/:id", hrm.SearchPerformanceEvaluationsByID)
+		rg.GET("employee/reward_disciplines/:id", hrm.SearchRewardDisciplinesByID)
+		rg.GET("employee/contract_histories/:id", hrm.SearchContractHistoriesByID)
+		rg.POST("employee", hrm.SaveEmployee)
+		rg.PUT("employee/relatives", hrm.UpdateRelatives)
+		rg.PUT("employee/emergency_contacts", hrm.UpdateEmergencyContacts)
+		rg.PUT("employee/salaries", hrm.UpdateSalaries)
+		rg.PUT("employee/certificates", hrm.UpdateCertificates)
+		rg.PUT("employee/career_histories", hrm.UpdateCareerHistories)
+		rg.PUT("employee/performance_evaluations", hrm.UpdatePerformanceEvaluations)
+		rg.PUT("employee/reward_disciplines", hrm.UpdateRewardDisciplines)
+		rg.PUT("employee/contract_histories", hrm.UpdateContractHistories)
+		rg.DELETE("employee/:id", hrm.DeleteEmployee)
 	}
 
 	srv = &http.Server{

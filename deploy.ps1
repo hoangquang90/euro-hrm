@@ -1,7 +1,7 @@
 # Thư mục nguồn và đích
 $srcDir   = Get-Location
-$deployDir = "F:\EuroStack\EuroConn"
-$buildOut  = Join-Path $deployDir "euroconn"   # tên binary Linux không có .exe
+$deployDir = "F:\EuroStack\EuroHRMDeploy"
+$buildOut  = Join-Path $deployDir "eurohrm"   # tên binary Linux không có .exe
 
 # Tạo thư mục đích nếu chưa có
 if (-Not (Test-Path $deployDir)) {
