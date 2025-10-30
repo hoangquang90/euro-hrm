@@ -449,15 +449,93 @@ func SearchContractHistoriesByID(c *gin.Context) {
 	c.JSON(http.StatusOK, lstContractHistories)
 }
 
-func DeleteEmployee(c *gin.Context) {
-	id := c.Query("id")
-	employee_id := c.Query("employeeId")
+func DeleteCertificatesByID(c *gin.Context) {
+	id := c.Param("id")
 	employeeDao := employeeimp.GetInstance(c.Request.Context())
-	id, err := employeeDao.DelEmployee(employee_id)
+	_, err := employeeDao.DeleteCertificatesByID(id)
 	if err != nil {
-		log.Printf("Error deleting employee: %v", err)
+		log.Printf("Error deleting certificates by ID: %v", err)
 		util.NewError(c, http.StatusInternalServerError, err)
+		c.JSON(http.StatusInternalServerError, "delete certificates by ID error")
 		return
 	}
-	c.JSON(200, id)
+	c.JSON(http.StatusOK, "Success")
+}
+
+func DeleteRelativesByID(c *gin.Context) {
+	id := c.Param("id")
+	employeeDao := employeeimp.GetInstance(c.Request.Context())
+	_, err := employeeDao.DeleteRelativesByID(id)
+	if err != nil {
+		log.Printf("Error deleting relatives by ID: %v", err)
+		util.NewError(c, http.StatusInternalServerError, err)
+		c.JSON(http.StatusInternalServerError, "delete relatives by ID error")
+		return
+	}
+	c.JSON(http.StatusOK, "Success")
+}
+
+func DeleteSalariesByID(c *gin.Context) {
+	id := c.Param("id")
+	employeeDao := employeeimp.GetInstance(c.Request.Context())
+	_, err := employeeDao.DeleteSalariesByID(id)
+	if err != nil {
+		log.Printf("Error deleting salaries by ID: %v", err)
+		util.NewError(c, http.StatusInternalServerError, err)
+		c.JSON(http.StatusInternalServerError, "delete salaries by ID error")
+		return
+	}
+	c.JSON(http.StatusOK, "Success")
+}
+
+func DeleteCareerHistoriesByID(c *gin.Context) {
+	id := c.Param("id")
+	employeeDao := employeeimp.GetInstance(c.Request.Context())
+	_, err := employeeDao.DeleteCareerHistoriesByID(id)
+	if err != nil {
+		log.Printf("Error deleting career histories by ID: %v", err)
+		util.NewError(c, http.StatusInternalServerError, err)
+		c.JSON(http.StatusInternalServerError, "delete career histories by ID error")
+		return
+	}
+	c.JSON(http.StatusOK, "Success")
+}
+
+func DeletePerformanceEvaluationsByID(c *gin.Context) {
+	id := c.Param("id")
+	employeeDao := employeeimp.GetInstance(c.Request.Context())
+	_, err := employeeDao.DeletePerformanceEvaluationsByID(id)
+	if err != nil {
+		log.Printf("Error deleting performance evaluations by ID: %v", err)
+		util.NewError(c, http.StatusInternalServerError, err)
+		c.JSON(http.StatusInternalServerError, "delete performance evaluations by ID error")
+		return
+	}
+	c.JSON(http.StatusOK, "Success")
+}
+
+func DeleteRewardDisciplinesByID(c *gin.Context) {
+	id := c.Param("id")
+	employeeDao := employeeimp.GetInstance(c.Request.Context())
+	_, err := employeeDao.DeleteRewardDisciplinesByID(id)
+	if err != nil {
+		log.Printf("Error deleting reward disciplines by ID: %v", err)
+		util.NewError(c, http.StatusInternalServerError, err)
+		c.JSON(http.StatusInternalServerError, "delete reward disciplines by ID error")
+		return
+	}
+	c.JSON(http.StatusOK, "Success")
+}
+
+func DeleteContractHistoriesByID(c *gin.Context) {
+	id := c.Param("id")
+	employeeDao := employeeimp.GetInstance(c.Request.Context())
+	_, err := employeeDao.DeleteContractHistoriesByID(id)
+	if err != nil {
+		log.Printf("Error deleting contract histories by ID: %v", err)
+		util.NewError(c, http.StatusInternalServerError, err)
+		c.JSON(http.StatusInternalServerError, "delete contract histories by ID error")
+		return
+	}
+	c.JSON(http.StatusOK, "Success")
 }

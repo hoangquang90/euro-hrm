@@ -3,6 +3,7 @@ package employee
 import "europm/internal/hrm/model"
 
 type Employee interface {
+	//employeeImp.go
 	GetTotalEmployee(attendanceCode string, fullName string) (int, error)
 	GetEmployee(attendanceCode string, fullName string) ([]model.EmployeeResult, error)
 	GetDetailEmployeeByID(id string) (model.Employee, error)
@@ -23,5 +24,14 @@ type Employee interface {
 	InsertPerformanceEvaluations(performanceEvaluations []model.PerformanceEvaluation) (string, error)
 	InsertRewardDiscipline(rds []model.RewardDiscipline) (string, error)
 	InsertContractHistories(chs model.ContractHistory) (string, error)
-	DelEmployee(empID string) (string, error)
+	DeleteCertificatesByID(id string) (string, error)
+	DeleteRelativesByID(id string) (string, error)
+	DeleteSalariesByID(id string) (string, error)
+	DeleteCareerHistoriesByID(id string) (string, error)
+	DeletePerformanceEvaluationsByID(id string) (string, error)
+	DeleteRewardDisciplinesByID(id string) (string, error)
+	DeleteContractHistoriesByID(id string) (string, error)
+
+	//EmployeeReportImp.go
+	SearchChangesEmployee(filter *model.ChangesEmployeeFilter) ([]model.ChangesEmployee, error)
 }

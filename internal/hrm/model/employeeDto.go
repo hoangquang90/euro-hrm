@@ -271,7 +271,51 @@ type EmployeeResult struct {
 	BirthDate      *time.Time `json:"birth_date,omitempty"`
 	DepartmentName string     `json:"department_name"`
 	PositionTitle  string     `json:"position_title"`
-	CompanyPhone   string     `json:"company_phone"`
-	PersonalPhone  string     `json:"personal_phone"`
-	CompanyEmail   string     `json:"company_email"`
+	CompanyPhone   *string    `json:"company_phone"`
+	PersonalPhone  *string    `json:"personal_phone"`
+	CompanyEmail   *string    `json:"company_email"`
+}
+
+func (r EmployeeResult) MarshalJSON() ([]byte, error) {
+	type empRs EmployeeResult
+	aux := struct {
+		empRs
+		CompanyPhone  string `json:"company_phone"`
+		PersonalPhone string `json:"personal_phone"`
+		CompanyEmail  string `json:"company_email"`
+	}{
+		empRs: empRs{
+			ID:             r.ID,
+			AttendanceCode: r.AttendanceCode,
+			FullName:       r.FullName,
+			BirthDate:      r.BirthDate,
+			DepartmentName: r.DepartmentName,
+			PositionTitle:  r.PositionTitle,
+		},
+	}
+	return json.Marshal(aux)
+}
+
+type ChangesEmployee struct {
+	TypeReport     string `json:"type_report"`
+	CountLeave     int64  `json:"count_leave"`
+	CountJoin      int64  `json:"count_join"`
+	CountEmployee  int64  `json:"count_employee"`
+	DepartmentName string `json:"department_name"`
+	WorkLocation   string `json:"work_location"`
+}
+
+// ChangesEmployeeFilterDTO is the transport object for binding from JSON or query params.
+// Dates are strings here for flexible client input; they will be parsed to time.Time in the handler.
+type ChangesEmployeeFilterDTO struct {
+	FromDate   string `json:"from_date" form:"from_date"`
+	ToDate     string `json:"to_date" form:"to_date"`
+	TypeReport string `json:"type_report" form:"type_report"`
+}
+
+// ChangesEmployeeFilter is the internal filter used by DAO with parsed time values
+type ChangesEmployeeFilter struct {
+	FromDate   time.Time `json:"from_date,omitempty"`
+	ToDate     time.Time `json:"to_date,omitempty"`
+	TypeReport string    `json:"type_report,omitempty"`
 }

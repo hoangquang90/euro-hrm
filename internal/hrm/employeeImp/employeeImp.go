@@ -833,8 +833,8 @@ func (e *EmployeeImp) GetContractHistoriesByEmployeeID(id string) ([]model.Contr
 	return lstContractHistories, nil
 }
 
-func (e *EmployeeImp) DelEmployee(empID string) (string, error) {
-	query := "select hrm.delete_employee($1)"
+func (e *EmployeeImp) DeleteCertificatesByID(id string) (string, error) {
+	query := "select hrm.delete_certificates_by_id($1)"
 	tx, err := dbhrm.Pool.BeginTx(e.ctx, pgx.TxOptions{})
 	if err != nil {
 		return "", err
@@ -846,10 +846,136 @@ func (e *EmployeeImp) DelEmployee(empID string) (string, error) {
 			tx.Commit(e.ctx)
 		}
 	}()
-	_, err = tx.Exec(e.ctx, query, empID)
+	_, err = tx.Exec(e.ctx, query, id)
 	if err != nil {
 		log.Printf("Error execute: %v", err)
 		return "", err
 	}
-	return empID, nil
+	return id, nil
+}
+
+func (e *EmployeeImp) DeleteRelativesByID(id string) (string, error) {
+	query := "select hrm.delete_relatives_by_id($1)"
+	tx, err := dbhrm.Pool.BeginTx(e.ctx, pgx.TxOptions{})
+	if err != nil {
+		return "", err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback(e.ctx)
+		} else {
+			tx.Commit(e.ctx)
+		}
+	}()
+	_, err = tx.Exec(e.ctx, query, id)
+	if err != nil {
+		log.Printf("Error execute: %v", err)
+		return "", err
+	}
+	return id, nil
+}
+
+func (e *EmployeeImp) DeleteSalariesByID(id string) (string, error) {
+	query := "select hrm.delete_salaries_by_id($1)"
+	tx, err := dbhrm.Pool.BeginTx(e.ctx, pgx.TxOptions{})
+	if err != nil {
+		return "", err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback(e.ctx)
+		} else {
+			tx.Commit(e.ctx)
+		}
+	}()
+	_, err = tx.Exec(e.ctx, query, id)
+	if err != nil {
+		log.Printf("Error execute: %v", err)
+		return "", err
+	}
+	return id, nil
+}
+
+func (e *EmployeeImp) DeleteCareerHistoriesByID(id string) (string, error) {
+	query := "select hrm.delete_career_histories_by_id($1)"
+	tx, err := dbhrm.Pool.BeginTx(e.ctx, pgx.TxOptions{})
+	if err != nil {
+		return "", err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback(e.ctx)
+		} else {
+			tx.Commit(e.ctx)
+		}
+	}()
+	_, err = tx.Exec(e.ctx, query, id)
+	if err != nil {
+		log.Printf("Error execute: %v", err)
+		return "", err
+	}
+	return id, nil
+}
+
+func (e *EmployeeImp) DeletePerformanceEvaluationsByID(id string) (string, error) {
+	query := "select hrm.delete_performance_evaluations_by_id($1)"
+	tx, err := dbhrm.Pool.BeginTx(e.ctx, pgx.TxOptions{})
+	if err != nil {
+		return "", err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback(e.ctx)
+		} else {
+			tx.Commit(e.ctx)
+		}
+	}()
+	_, err = tx.Exec(e.ctx, query, id)
+	if err != nil {
+		log.Printf("Error execute: %v", err)
+		return "", err
+	}
+	return id, nil
+}
+
+func (e *EmployeeImp) DeleteRewardDisciplinesByID(id string) (string, error) {
+	query := "select hrm.delete_reward_discipline_by_id($1)"
+	tx, err := dbhrm.Pool.BeginTx(e.ctx, pgx.TxOptions{})
+	if err != nil {
+		return "", err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback(e.ctx)
+		} else {
+			tx.Commit(e.ctx)
+		}
+	}()
+	_, err = tx.Exec(e.ctx, query, id)
+	if err != nil {
+		log.Printf("Error execute: %v", err)
+		return "", err
+	}
+	return id, nil
+}
+
+func (e *EmployeeImp) DeleteContractHistoriesByID(id string) (string, error) {
+	query := "select hrm.delete_contract_histories_by_id($1)"
+	tx, err := dbhrm.Pool.BeginTx(e.ctx, pgx.TxOptions{})
+	if err != nil {
+		return "", err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback(e.ctx)
+		} else {
+			tx.Commit(e.ctx)
+		}
+	}()
+	_, err = tx.Exec(e.ctx, query, id)
+	if err != nil {
+		log.Printf("Error execute: %v", err)
+		return "", err
+	}
+	return id, nil
 }
