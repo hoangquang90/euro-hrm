@@ -1,8 +1,0 @@
-/var/log/iportal-fdm/*.log {
-        daily
-        rotate 365
-        notifempty
-        copytruncate
-        compress
-        dateyesterday
-}

@@ -443,7 +443,7 @@ func (e *EmployeeImp) InsertPerformanceEvaluations(performanceEvaluations []mode
 }
 
 func (e *EmployeeImp) InsertRewardDiscipline(rds []model.RewardDiscipline) (string, error) {
-	query := "select hrm.insert_reward_discipline($1,$2,$3,$4,$5,$6,$7)"
+	query := "select hrm.insert_reward_discipline($1,$2,$3,$4,$5,$6,$7,$8)"
 	tx, err := dbhrm.Pool.BeginTx(e.ctx, pgx.TxOptions{})
 	if err != nil {
 		return "", err

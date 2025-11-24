@@ -63,33 +63,71 @@ func SearchChangesEmployee(c *gin.Context) {
 		return
 	}
 
-	// Aggregate totals by WorkLocation
-	type Totals struct {
-		WorkLocation string `json:"work_location"`
-		TotalLeave   int64  `json:"total_leave"`
-		TotalJoin    int64  `json:"total_join"`
-		TotalEmp     int64  `json:"total_emp"`
+	// 1) Department summaries by WorkLocation
+
+	// 2) Build work_location keyed response with department summaries
+	type DeptSummary struct {
+		FirstPeriod    int64  `json:"first_period"`
+		CountLeave     int64  `json:"count_leave"`
+		CountJoin      int64  `json:"count_join"`
+		EndPeriod      int64  `json:"end_period"`
+		DepartmentName string `json:"department_name"`
 	}
 
-	totalsMap := make(map[string]*Totals)
+	// workLocation -> departmentName -> summary accumulator
+	grouped := make(map[string]map[string]*DeptSummary)
 	for _, ch := range changes {
-		key := ch.WorkLocation
-		if _, ok := totalsMap[key]; !ok {
-			totalsMap[key] = &Totals{WorkLocation: key}
+		wl := ch.WorkLocation
+		dept := ch.DepartmentName
+		if _, ok := grouped[wl]; !ok {
+			grouped[wl] = make(map[string]*DeptSummary)
 		}
-		t := totalsMap[key]
-		t.TotalLeave += ch.CountLeave
-		t.TotalJoin += ch.CountJoin
-		t.TotalEmp += ch.CountEmployee
+		if _, ok := grouped[wl][dept]; !ok {
+			grouped[wl][dept] = &DeptSummary{DepartmentName: dept}
+		}
+		rec := grouped[wl][dept]
+		// Sum join/leave across entries in the period
+		rec.CountJoin += ch.CountJoin
+		rec.CountLeave += ch.CountLeave
+		// Capture first period from 'Đầu kỳ' snapshot if present
+		if ch.TypeReport == "Đầu kỳ" {
+			rec.FirstPeriod = ch.CountEmployee
+		}
 	}
 
-	totals := make([]Totals, 0, len(totalsMap))
-	for _, v := range totalsMap {
-		totals = append(totals, *v)
+	// After aggregation, compute end_period = first_period - count_leave + count_join
+	// and compute totals per work_location: total_first_period, total_leave, total_join, total_end_period
+	type Totals struct {
+		WorkLocation     string `json:"work_location"`
+		TotalFirstPeriod int64  `json:"total_first_period"`
+		TotalLeave       int64  `json:"total_leave"`
+		TotalJoin        int64  `json:"total_join"`
+		TotalEndPeriod   int64  `json:"total_end_period"`
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"data":                    changes,
-		"totals_by_work_location": totals,
-	})
+	totals := make([]Totals, 0, len(grouped))
+	resp := gin.H{}
+	for wl, deptMap := range grouped {
+		items := make([]DeptSummary, 0, len(deptMap))
+		var sumFirst, sumLeave, sumJoin, sumEnd int64
+		for _, v := range deptMap {
+			v.EndPeriod = v.FirstPeriod - v.CountLeave + v.CountJoin
+			items = append(items, *v)
+			sumFirst += v.FirstPeriod
+			sumLeave += v.CountLeave
+			sumJoin += v.CountJoin
+			sumEnd += v.EndPeriod
+		}
+		resp[wl] = items
+		totals = append(totals, Totals{
+			WorkLocation:     wl,
+			TotalFirstPeriod: sumFirst,
+			TotalLeave:       sumLeave,
+			TotalJoin:        sumJoin,
+			TotalEndPeriod:   sumEnd,
+		})
+	}
+	resp["totals_by_work_location"] = totals
+
+	c.JSON(http.StatusOK, resp)
 }
