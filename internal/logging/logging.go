@@ -200,7 +200,7 @@ func initTracerProvider() (func(context.Context) error, error) {
 	res, err := resource.New(ctx,
 		resource.WithAttributes(
 			// the service name used to display traces in backends
-			semconv.ServiceNameKey.String("iportal-fdm"),
+			semconv.ServiceNameKey.String("euro-hrm"),
 		),
 	)
 	if err != nil {
