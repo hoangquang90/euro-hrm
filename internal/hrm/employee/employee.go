@@ -1,6 +1,9 @@
 package employee
 
-import "europm/internal/hrm/model"
+import (
+	"europm/internal/hrm/model"
+	"time"
+)
 
 type Employee interface {
 	//employeeImp.go
@@ -31,7 +34,13 @@ type Employee interface {
 	DeletePerformanceEvaluationsByID(id string) (string, error)
 	DeleteRewardDisciplinesByID(id string) (string, error)
 	DeleteContractHistoriesByID(id string) (string, error)
+	GetTotalEmployeesResign(text string, fromDate time.Time, toDate time.Time) (int, error)
+	GetEmployeesResign(text string, fromDate time.Time, toDate time.Time) ([]model.Employee, error)
+	GetEmployeeResignByID(id string) (model.Employee, error)
+	UpdateEmployeeResign(employ model.Employee) error
 
 	//EmployeeReportImp.go
-	SearchChangesEmployee(filter *model.ChangesEmployeeFilter) ([]model.ChangesEmployee, error)
+	SearchChangesEmployee(fromDate time.Time, toDate time.Time, typeReport string) ([]model.ChangesEmployee, error)
+	SearchHRMWorkReport(fromDate time.Time, toDate time.Time, tyeReport string) ([]model.Employee, error)
+	SearchHRMResignReport(fromDate time.Time, toDate time.Time, tyeReport string) ([]model.Employee, error)
 }

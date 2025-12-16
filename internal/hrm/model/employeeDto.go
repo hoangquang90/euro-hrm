@@ -8,11 +8,11 @@ import (
 
 type Employee struct {
 	ID                *string    `json:"id"`
-	CreatedAt         time.Time  `json:"created_at,omitempty"`
-	UpdatedAt         time.Time  `json:"updated_at,omitempty"`
-	FullName          string     `json:"full_name"`
-	BirthDate         time.Time  `json:"birth_date,omitempty"`
-	Gender            string     `json:"gender,omitempty"`
+	CreatedAt         *time.Time `json:"created_at,omitempty"`
+	UpdatedAt         *time.Time `json:"updated_at,omitempty"`
+	FullName          *string    `json:"full_name"`
+	BirthDate         *time.Time `json:"birth_date,omitempty"`
+	Gender            *string    `json:"gender,omitempty"`
 	IDNumber          *string    `json:"id_number,omitempty"`
 	IssueDate         *time.Time `json:"issue_date,omitempty"`
 	IssuePlace        *string    `json:"issue_place,omitempty"`
@@ -37,7 +37,6 @@ type Employee struct {
 	Rank              *string    `json:"rank,omitempty"`
 	WorkLocation      *string    `json:"work_location,omitempty"`
 	OfficialDate      *time.Time `json:"official_date,omitempty"`
-	ResignDate        *time.Time `json:"resign_date,omitempty"`
 	Leader            *string    `json:"leader,omitempty"`
 	ManagerID         *string    `json:"manager_id,omitempty"`
 	SocialInsuranceNo *string    `json:"social_insurance_no,omitempty"`
@@ -57,6 +56,15 @@ type Employee struct {
 	HealthStatus      *string    `json:"health_status,omitempty"`
 	ImagePath         *string    `json:"image_path,omitempty"`
 	ImageName         *string    `json:"image_name,omitempty"`
+	// Additional fields resign infomation
+	ResignCode         *string    `json:"resign_code,omitempty"`
+	ResignRequest      *time.Time `json:"resign_request,omitempty"`
+	ResignDate         *time.Time `json:"resign_date,omitempty"`
+	ResignStatus       *string    `json:"resign_status,omitempty"`
+	ResignReason       *string    `json:"resign_reason,omitempty"`
+	ResignApprovedBy   *string    `json:"resign_approved_by,omitempty"`
+	ResignApprovedDate *time.Time `json:"resign_approved_date,omitempty"`
+	EmploymentType     *string    `json:"employment_type,omitempty"`
 }
 
 // MarshalJSON customizes JSON output: pointer string fields nil -> ""
@@ -65,47 +73,65 @@ func (e Employee) MarshalJSON() ([]byte, error) {
 	type Alias Employee
 	aux := struct {
 		Alias
-		IssueDate         string `json:"issue_date,omitempty"`
-		JoinDate          string `json:"join_date,omitempty"`
-		OfficialDate      string `json:"official_date,omitempty"`
-		ResignDate        string `json:"resign_date,omitempty"`
-		InsuranceDate     string `json:"insurance_date,omitempty"`
-		HealthInsurExpire string `json:"health_insur_expire,omitempty"`
-		Age               string `json:"age,omitempty"`
-		GraduationYear    string `json:"graduation_year,omitempty"`
-		InsuranceAmount   string `json:"insurance_amount,omitempty"`
-		HealthInsurance   string `json:"health_insurance,omitempty"`
-		TaxID             string `json:"tax_id,omitempty"`
-		BankAccount       string `json:"bank_account,omitempty"`
-		BankName          string `json:"bank_name,omitempty"`
-		Status            string `json:"status,omitempty"`
-		Portrait          string `json:"portrait,omitempty"`
-		DevelopmentPlan   string `json:"development_plan,omitempty"`
-		JobObjective      string `json:"job_objective,omitempty"`
-		HealthStatus      string `json:"health_status,omitempty"`
-		ImagePath         string `json:"image_path,omitempty"`
-		ImageName         string `json:"image_name,omitempty"`
+		CreatedAt          string `json:"created_at,omitempty"`
+		UpdatedAt          string `json:"updated_at,omitempty"`
+		IssueDate          string `json:"issue_date,omitempty"`
+		JoinDate           string `json:"join_date,omitempty"`
+		OfficialDate       string `json:"official_date,omitempty"`
+		ResignDate         string `json:"resign_date,omitempty"`
+		InsuranceDate      string `json:"insurance_date,omitempty"`
+		HealthInsurExpire  string `json:"health_insur_expire,omitempty"`
+		Age                string `json:"age,omitempty"`
+		GraduationYear     string `json:"graduation_year,omitempty"`
+		InsuranceAmount    string `json:"insurance_amount,omitempty"`
+		HealthInsurance    string `json:"health_insurance,omitempty"`
+		TaxID              string `json:"tax_id,omitempty"`
+		BankAccount        string `json:"bank_account,omitempty"`
+		BankName           string `json:"bank_name,omitempty"`
+		Status             string `json:"status,omitempty"`
+		Portrait           string `json:"portrait,omitempty"`
+		DevelopmentPlan    string `json:"development_plan,omitempty"`
+		JobObjective       string `json:"job_objective,omitempty"`
+		HealthStatus       string `json:"health_status,omitempty"`
+		ImagePath          string `json:"image_path,omitempty"`
+		ImageName          string `json:"image_name,omitempty"`
+		ResignCode         string `json:"resign_code,omitempty"`
+		ResignRequest      string `json:"resign_request,omitempty"`
+		ResignStatus       string `json:"resign_status,omitempty"`
+		ResignReason       string `json:"resign_reason,omitempty"`
+		ResignApprovedBy   string `json:"resign_approved_by,omitempty"`
+		ResignApprovedDate string `json:"resign_approved_date,omitempty"`
+		EmploymentType     string `json:"employment_type,omitempty"`
 	}{
-		Alias:             (Alias)(e),
-		IssueDate:         derefTime(e.IssueDate),
-		JoinDate:          derefTime(e.JoinDate),
-		OfficialDate:      derefTime(e.OfficialDate),
-		ResignDate:        derefTime(e.ResignDate),
-		InsuranceDate:     derefTime(e.InsuranceDate),
-		HealthInsurExpire: derefTime(e.HealthInsurExpire),
-		GraduationYear:    derefInt64(e.GraduationYear),
-		InsuranceAmount:   derefInt64(e.InsuranceAmount),
-		HealthInsurance:   derefStr(e.HealthInsurance),
-		TaxID:             derefStr(e.TaxID),
-		BankAccount:       derefStr(e.BankAccount),
-		BankName:          derefStr(e.BankName),
-		Status:            derefStr(e.Status),
-		Portrait:          derefStr(e.Portrait),
-		DevelopmentPlan:   derefStr(e.DevelopmentPlan),
-		JobObjective:      derefStr(e.JobObjective),
-		HealthStatus:      derefStr(e.HealthStatus),
-		ImagePath:         derefStr(e.ImagePath),
-		ImageName:         derefStr(e.ImageName),
+		Alias:              (Alias)(e),
+		CreatedAt:          derefTime(e.CreatedAt),
+		UpdatedAt:          derefTime(e.UpdatedAt),
+		IssueDate:          derefTime(e.IssueDate),
+		JoinDate:           derefTime(e.JoinDate),
+		OfficialDate:       derefTime(e.OfficialDate),
+		ResignDate:         derefTime(e.ResignDate),
+		InsuranceDate:      derefTime(e.InsuranceDate),
+		HealthInsurExpire:  derefTime(e.HealthInsurExpire),
+		GraduationYear:     derefInt64(e.GraduationYear),
+		InsuranceAmount:    derefInt64(e.InsuranceAmount),
+		HealthInsurance:    derefStr(e.HealthInsurance),
+		TaxID:              derefStr(e.TaxID),
+		BankAccount:        derefStr(e.BankAccount),
+		BankName:           derefStr(e.BankName),
+		Status:             derefStr(e.Status),
+		Portrait:           derefStr(e.Portrait),
+		DevelopmentPlan:    derefStr(e.DevelopmentPlan),
+		JobObjective:       derefStr(e.JobObjective),
+		HealthStatus:       derefStr(e.HealthStatus),
+		ImagePath:          derefStr(e.ImagePath),
+		ImageName:          derefStr(e.ImageName),
+		ResignCode:         derefStr(e.ResignCode),
+		ResignRequest:      derefTime(e.ResignRequest),
+		ResignStatus:       derefStr(e.ResignStatus),
+		ResignReason:       derefStr(e.ResignReason),
+		ResignApprovedBy:   derefStr(e.ResignApprovedBy),
+		ResignApprovedDate: derefTime(e.ResignApprovedDate),
+		EmploymentType:     derefStr(e.EmploymentType),
 	}
 	return json.Marshal(aux)
 }

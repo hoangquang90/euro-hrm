@@ -6,6 +6,7 @@ import (
 	"europm/internal/hrm/employee"
 	"europm/internal/hrm/model"
 	"log"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/lib/pq"
@@ -978,4 +979,180 @@ func (e *EmployeeImp) DeleteContractHistoriesByID(id string) (string, error) {
 		return "", err
 	}
 	return id, nil
+}
+
+func (e *EmployeeImp) GetTotalEmployeesResign(text string, fromDate time.Time, toDate time.Time) (int, error) {
+	log.Printf("GetTotalEmployeesResign: %s %v %v", text, fromDate, toDate)
+	var total int
+	query := "select hrm.get_employees_resign($1,$2,$3,$4)"
+	var cursor string
+	tx, _ := dbhrm.Pool.BeginTx(e.ctx, pgx.TxOptions{})
+	defer func() {
+		if tx != nil {
+			tx.Commit(e.ctx)
+		}
+	}()
+	row := tx.QueryRow(e.ctx, query, fromDate, toDate, text, "TOTAL")
+	err := row.Scan(&cursor)
+	if err != nil {
+		log.Printf("Error execute", err)
+		return 0, err
+	}
+	rows, err := tx.Query(e.ctx, "FETCH ALL "+pq.QuoteIdentifier(cursor)+";")
+	defer func() {
+		if rows != nil {
+			rows.Close()
+		}
+	}()
+	if err != nil {
+		log.Printf("Error FETCH refCurser: %v", err)
+		return 0, err
+	}
+	for rows.Next() {
+		err := rows.Scan(&total)
+		log.Printf("Total employee: %d", total)
+		if err != nil {
+			log.Printf("Error scanning row: %v", err)
+			return total, err
+		}
+	}
+	return total, nil
+}
+
+func (e *EmployeeImp) GetEmployeesResign(text string, fromDate time.Time, toDate time.Time) ([]model.Employee, error) {
+	log.Printf("GetEmployeesResign: %s", text)
+	lstEmployee := make([]model.Employee, 0)
+	query := "select hrm.get_employees_resign($1,$2,$3,$4)"
+	tx, err := dbhrm.Pool.BeginTx(e.ctx, pgx.TxOptions{})
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if tx != nil {
+			tx.Commit(e.ctx)
+		}
+	}()
+	row := tx.QueryRow(e.ctx, query, fromDate, toDate, text, "SELECT")
+	var cursor string
+	err = row.Scan(&cursor)
+	if err != nil {
+		log.Printf("Error execute", err)
+		return nil, err
+	}
+	rows, err := tx.Query(e.ctx, "FETCH ALL "+pq.QuoteIdentifier(cursor)+";")
+	defer func() {
+		if rows != nil {
+			rows.Close()
+		}
+	}()
+	if err != nil {
+		log.Printf("Error FETCH refCurser: %v", err)
+		return nil, err
+	}
+	for rows.Next() {
+		var employ model.Employee
+		err := rows.Scan(&employ.ID,
+			&employ.AttendanceCode,
+			&employ.FullName,
+			&employ.BirthDate,
+			&employ.ResignCode,
+			&employ.ResignRequest,
+			&employ.ResignDate,
+			&employ.ResignStatus,
+			&employ.ResignReason,
+			&employ.ResignApprovedBy,
+			&employ.ResignApprovedDate,
+			&employ.EmploymentType,
+		)
+		if err != nil {
+			log.Printf("Error scanning row: %v", err)
+			return nil, err
+		}
+		lstEmployee = append(lstEmployee, employ)
+	}
+	return lstEmployee, nil
+}
+
+func (e *EmployeeImp) GetEmployeeResignByID(id string) (model.Employee, error) {
+	var employ model.Employee
+	query := "select hrm.get_employees_resign_by_id($1)"
+	var cursor string
+	tx, err := dbhrm.Pool.BeginTx(e.ctx, pgx.TxOptions{})
+	if err != nil {
+		return model.Employee{}, err
+	}
+	defer func() {
+		if tx != nil {
+			tx.Commit(e.ctx)
+		}
+	}()
+	row := tx.QueryRow(e.ctx, query, id)
+	err = row.Scan(&cursor)
+	if err != nil {
+		log.Printf("Error execute: %v", err)
+		return model.Employee{}, err
+	}
+
+	rows, err := tx.Query(e.ctx, "FETCH ALL "+pq.QuoteIdentifier(cursor)+";")
+	if err != nil {
+		log.Printf("Error FETCH refCursor: %v", err)
+		return model.Employee{}, err
+	}
+	defer func() {
+		if rows != nil {
+			rows.Close()
+		}
+	}()
+
+	for rows.Next() {
+		err := rows.Scan(
+			&employ.ID,
+			&employ.AttendanceCode,
+			&employ.FullName,
+			&employ.BirthDate,
+			&employ.ResignCode,
+			&employ.ResignRequest,
+			&employ.ResignDate,
+			&employ.ResignStatus,
+			&employ.ResignReason,
+			&employ.ResignApprovedBy,
+			&employ.ResignApprovedDate,
+			&employ.EmploymentType,
+		)
+		if err != nil {
+			log.Printf("Error scanning row: %v", err)
+			return model.Employee{}, err
+		}
+	}
+	return employ, nil
+}
+
+func (e *EmployeeImp) UpdateEmployeeResign(employ model.Employee) error {
+	query := "call hrm.update_employee_resign($1,$2,$3,$4,$5,$6,$7,$8)"
+	tx, err := dbhrm.Pool.BeginTx(e.ctx, pgx.TxOptions{})
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback(e.ctx)
+		} else {
+			tx.Commit(e.ctx)
+		}
+	}()
+	_, err = tx.Exec(e.ctx, query,
+		employ.ID,
+		employ.ResignCode,
+		employ.ResignRequest,
+		employ.ResignDate,
+		employ.ResignStatus,
+		employ.ResignReason,
+		employ.ResignApprovedBy,
+		employ.ResignApprovedDate,
+	)
+	if err != nil {
+		log.Printf("Error execute: %v", err)
+		return err
+	}
+	return nil
 }

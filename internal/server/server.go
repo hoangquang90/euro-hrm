@@ -61,7 +61,13 @@ func Start() (err error) {
 		rg.DELETE("employee/performance_evaluations/:id", hrm.DeletePerformanceEvaluationsByID)
 		rg.DELETE("employee/reward_disciplines/:id", hrm.DeleteRewardDisciplinesByID)
 		rg.DELETE("employee/contract_histories/:id", hrm.DeleteContractHistoriesByID)
+		rg.GET("employee/employees_resign", hrm.SearchEmployeesResign)
+		rg.GET("employee/employees_resign/:id", hrm.SearchEmployeeResignByID)
+		rg.PUT("employee/update_employee_resign", hrm.UpdateEmployeeResign)
 		rg.GET("employee/changes_employee", hrm.SearchChangesEmployee)
+		rg.GET("employee/hrm_work_report", hrm.SearchHRMWorkReport)
+		rg.GET("employee/employees_resign_report", hrm.SearhResignReport)
+
 	}
 
 	srv = &http.Server{

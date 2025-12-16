@@ -8,6 +8,7 @@ import (
 	"europm/internal/util"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -263,6 +264,7 @@ func UpdatePerformanceEvaluations(c *gin.Context) {
 	}
 	c.JSON(200, "Success")
 }
+
 func UpdateRewardDisciplines(c *gin.Context) {
 	var emp []model.RewardDiscipline
 	if err := c.ShouldBindJSON(&emp); err != nil {
@@ -538,4 +540,84 @@ func DeleteContractHistoriesByID(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, "Success")
+}
+
+func SearchEmployeesResign(c *gin.Context) {
+	lstEmployee := make([]model.Employee, 0)
+	text := c.Query("text")
+	fromDateStr := c.Query("from_date")
+	toDateStr := c.Query("to_date")
+
+	var fromDate, toDate time.Time
+	var err error
+	if fromDateStr != "" {
+		fromDate, err = time.Parse("2006-01-02", fromDateStr)
+		if err != nil {
+			log.Printf("Error parsing from_date: %v", err)
+			util.NewError(c, http.StatusBadRequest, err)
+			c.JSON(http.StatusBadRequest, "invalid from_date format")
+			return
+		}
+	}
+	if toDateStr != "" {
+		toDate, err = time.Parse("2006-01-02", toDateStr)
+		if err != nil {
+			log.Printf("Error parsing to_date: %v", err)
+			util.NewError(c, http.StatusBadRequest, err)
+			c.JSON(http.StatusBadRequest, "invalid to_date format")
+			return
+		}
+	}
+	employeeDao := employeeimp.GetInstance(c.Request.Context())
+	total, err := employeeDao.GetTotalEmployeesResign(text, fromDate, toDate)
+	if err != nil {
+		log.Printf("Error fetching total employees resign: %v", err)
+		util.NewError(c, http.StatusInternalServerError, err)
+		c.JSON(http.StatusInternalServerError, "get total employees resign error")
+		return
+	}
+	if total > 0 {
+		lstEmployee, err = employeeDao.GetEmployeesResign(text, fromDate, toDate)
+		if err != nil {
+			log.Printf("Error fetching employees resign: %v", err)
+			util.NewError(c, http.StatusInternalServerError, err)
+			c.JSON(http.StatusInternalServerError, "get employees resign error")
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{"total": total, "employees": lstEmployee})
+}
+
+func SearchEmployeeResignByID(c *gin.Context) {
+	id := c.Param("id")
+	employeeDao := employeeimp.GetInstance(c.Request.Context())
+	employeeResign, err := employeeDao.GetEmployeeResignByID(id)
+	if err != nil {
+		log.Printf("Error fetching employee resign by ID: %v", err)
+		util.NewError(c, http.StatusInternalServerError, err)
+		c.JSON(http.StatusInternalServerError, "get employee resign by ID error")
+		return
+	}
+
+	c.JSON(http.StatusOK, employeeResign)
+}
+
+func UpdateEmployeeResign(c *gin.Context) {
+	var employee model.Employee
+	if err := c.ShouldBindJSON(&employee); err != nil {
+		log.Printf("Error binding JSON: %v", err)
+		util.NewError(c, http.StatusBadRequest, err)
+		c.JSON(http.StatusBadRequest, "bind reward discipline error")
+		return
+	}
+	employeeDao := employeeimp.GetInstance(c.Request.Context())
+	err := employeeDao.UpdateEmployeeResign(employee)
+	if err != nil {
+		log.Printf("Error updating employee resign: %v", err)
+		util.NewError(c, http.StatusInternalServerError, err)
+		c.JSON(http.StatusInternalServerError, "update employee resign error")
+		return
+	}
+	c.JSON(200, "Success")
 }
