@@ -150,6 +150,13 @@ func derefInt64(i *int64) string {
 	return fmt.Sprintf("%d", *i)
 }
 
+func derefInt(i *int) string {
+	if i == nil {
+		return ""
+	}
+	return fmt.Sprintf("%d", *i)
+}
+
 func derefStr(s *string) string {
 	if s == nil {
 		return ""
@@ -344,4 +351,45 @@ type ChangesEmployeeFilter struct {
 	FromDate   time.Time `json:"from_date,omitempty"`
 	ToDate     time.Time `json:"to_date,omitempty"`
 	TypeReport string    `json:"type_report,omitempty"`
+}
+
+type RecruitmentPlan struct {
+	ID           string     `json:"id"`
+	PlanYear     *int       `json:"plan_year,omitempty"`
+	WorkLocation *string    `json:"work_location,omitempty"`
+	Department   *string    `json:"department,omitempty"`
+	Position     *string    `json:"position,omitempty"`
+	QuantityPlan *int       `json:"quantity_plan,omitempty"`
+	CreatedAt    *time.Time `json:"created_at,omitempty"`
+	Difficulty   *string    `json:"difficulty,omitempty"` // mức độ khó tuyển
+	Solution     *string    `json:"reason,omitempty"`     // nguyên nhân
+	Proposal     *string    `json:"proposal,omitempty"`   // đề xuất
+}
+
+func (r RecruitmentPlan) MarshalJSON() ([]byte, error) {
+	type Alias RecruitmentPlan
+	aux := struct {
+		Alias
+		PlanYear     string `json:"plan_year,omitempty"`
+		WorkLocation string `json:"work_location,omitempty"`
+		Department   string `json:"department,omitempty"`
+		Position     string `json:"position,omitempty"`
+		QuantityPlan string `json:"quantity_plan,omitempty"`
+		CreatedAt    string `json:"created_at,omitempty"`
+		Difficulty   string `json:"difficulty,omitempty"` // mức độ khó tuyển
+		Solution     string `json:"reason,omitempty"`     // nguyên nhân
+		Proposal     string `json:"proposal,omitempty"`   // đề xuất
+	}{
+		Alias:        (Alias)(r),
+		PlanYear:     derefInt(r.PlanYear),
+		WorkLocation: derefStr(r.WorkLocation),
+		Department:   derefStr(r.Department),
+		Position:     derefStr(r.Position),
+		QuantityPlan: derefInt(r.QuantityPlan),
+		CreatedAt:    derefTime(r.CreatedAt),
+		Difficulty:   derefStr(r.Difficulty),
+		Solution:     derefStr(r.Solution),
+		Proposal:     derefStr(r.Proposal),
+	}
+	return json.Marshal(aux)
 }

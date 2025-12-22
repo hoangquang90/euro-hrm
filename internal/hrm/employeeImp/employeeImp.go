@@ -5,6 +5,7 @@ import (
 	"europm/internal/db/dbhrm"
 	"europm/internal/hrm/employee"
 	"europm/internal/hrm/model"
+	"fmt"
 	"log"
 	"time"
 
@@ -1150,6 +1151,151 @@ func (e *EmployeeImp) UpdateEmployeeResign(employ model.Employee) error {
 		employ.ResignApprovedBy,
 		employ.ResignApprovedDate,
 	)
+	if err != nil {
+		log.Printf("Error execute: %v", err)
+		return err
+	}
+	return nil
+}
+
+func (e *EmployeeImp) GetRecruitmentPlan(year int) ([]model.RecruitmentPlan, error) {
+	var recruitmentPlans []model.RecruitmentPlan
+	query := "select hrm.get_recruitment_plan($1)"
+	tx, err := dbhrm.Pool.BeginTx(e.ctx, pgx.TxOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		if err != nil {
+			tx.Rollback(e.ctx)
+		} else {
+			tx.Commit(e.ctx)
+		}
+	}()
+	row := tx.QueryRow(e.ctx, query, year)
+	var cursor string
+	err = row.Scan(&cursor)
+	if err != nil {
+		log.Printf("Error execute", err)
+		return nil, err
+	}
+	rows, err := tx.Query(e.ctx, "FETCH ALL "+pq.QuoteIdentifier(cursor)+";")
+	defer func() {
+		if rows != nil {
+			rows.Close()
+		}
+	}()
+	if err != nil {
+		log.Printf("Error FETCH refCurser: %v", err)
+	}
+	for rows.Next() {
+		rp := model.RecruitmentPlan{}
+		err := rows.Scan(&rp.ID, &rp.PlanYear, &rp.WorkLocation, &rp.Department, &rp.Position, &rp.QuantityPlan, &rp.Difficulty, &rp.Solution, &rp.Proposal)
+		if err != nil {
+			fmt.Println("Error scanning row: ", err)
+			return nil, err
+		}
+		recruitmentPlans = append(recruitmentPlans, rp)
+	}
+
+	if err := rows.Err(); err != nil {
+		fmt.Println("Error iterating rows in SearchHRMResignReport: ", err)
+		return nil, err
+	}
+	return recruitmentPlans, nil
+}
+
+func (e *EmployeeImp) GetRecruitmentPlanByID(id string) (model.RecruitmentPlan, error) {
+	var recruitmentPlans model.RecruitmentPlan
+	query := "select hrm.get_recruitment_plan_by_id($1)"
+	tx, err := dbhrm.Pool.BeginTx(e.ctx, pgx.TxOptions{})
+	if err != nil {
+		return model.RecruitmentPlan{}, err
+	}
+
+	defer func() {
+		if err != nil {
+			tx.Rollback(e.ctx)
+		} else {
+			tx.Commit(e.ctx)
+		}
+	}()
+	row := tx.QueryRow(e.ctx, query, id)
+	var cursor string
+	err = row.Scan(&cursor)
+	if err != nil {
+		log.Printf("Error execute", err)
+		return model.RecruitmentPlan{}, err
+	}
+	rows, err := tx.Query(e.ctx, "FETCH ALL "+pq.QuoteIdentifier(cursor)+";")
+	defer func() {
+		if rows != nil {
+			rows.Close()
+		}
+	}()
+	if err != nil {
+		log.Printf("Error FETCH refCurser: %v", err)
+	}
+	for rows.Next() {
+		err := rows.Scan(&recruitmentPlans.ID, &recruitmentPlans.PlanYear, &recruitmentPlans.WorkLocation, &recruitmentPlans.Department, &recruitmentPlans.Position, &recruitmentPlans.QuantityPlan, &recruitmentPlans.Difficulty, &recruitmentPlans.Solution, &recruitmentPlans.Proposal)
+		if err != nil {
+			fmt.Println("Error scanning row: ", err)
+			return model.RecruitmentPlan{}, err
+		}
+	}
+
+	if err := rows.Err(); err != nil {
+		fmt.Println("Error iterating rows in SearchHRMResignReport: ", err)
+		return model.RecruitmentPlan{}, err
+	}
+	return recruitmentPlans, nil
+}
+
+func (e *EmployeeImp) InstRecruitmentPlan(rp model.RecruitmentPlan) (string, error) {
+	var id string
+	query := "select hrm.insert_recruitment_plan($1,$2,$3,$4,$5,$6,$7,$8,$9)"
+	args := []interface{}{
+		rp.ID,
+		rp.PlanYear,
+		rp.WorkLocation,
+		rp.Department,
+		rp.Position,
+		rp.QuantityPlan,
+		rp.Difficulty,
+		rp.Solution,
+		rp.Proposal,
+	}
+	tx, err := dbhrm.Pool.BeginTx(e.ctx, pgx.TxOptions{})
+	if err != nil {
+		return "", err
+	}
+	defer func() {
+		if tx != nil {
+			tx.Commit(e.ctx)
+		}
+	}()
+	row := tx.QueryRow(e.ctx, query, args...)
+	if err := row.Scan(&id); err != nil {
+		log.Printf("Error execute: %v", err)
+		return "", err
+	}
+	return id, nil
+}
+func (e *EmployeeImp) DeleteRecruitmentPlan(id string) error {
+	query := "call hrm.delete_recruitment_plan_by_id($1)"
+	tx, err := dbhrm.Pool.BeginTx(e.ctx, pgx.TxOptions{})
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback(e.ctx)
+		} else {
+			tx.Commit(e.ctx)
+		}
+	}()
+	_, err = tx.Exec(e.ctx, query, id)
 	if err != nil {
 		log.Printf("Error execute: %v", err)
 		return err

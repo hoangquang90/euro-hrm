@@ -8,6 +8,7 @@ import (
 	"europm/internal/util"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -620,4 +621,75 @@ func UpdateEmployeeResign(c *gin.Context) {
 		return
 	}
 	c.JSON(200, "Success")
+}
+
+func SearchRecruitmentPlan(c *gin.Context) {
+	lstRecruitmentPlan := make([]model.RecruitmentPlan, 0)
+	yearStr := c.Query("year")
+	var year int
+	var err error
+	if yearStr != "" {
+		year, err = strconv.Atoi(yearStr)
+		if err != nil {
+			log.Printf("Error parsing year: %v", err)
+			util.NewError(c, http.StatusBadRequest, err)
+			c.JSON(http.StatusBadRequest, "invalid year format")
+			return
+		}
+	}
+	employeeDao := employeeimp.GetInstance(c.Request.Context())
+	lstRecruitmentPlan, err = employeeDao.GetRecruitmentPlan(year)
+	if err != nil {
+		log.Printf("Error fetching recruitment plan: %v", err)
+		util.NewError(c, http.StatusInternalServerError, err)
+		c.JSON(http.StatusInternalServerError, "get recruitment plan error")
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"recruitment_plans": lstRecruitmentPlan})
+}
+
+func SearchRecruitmentPlanByID(c *gin.Context) {
+	ID := c.Query("id")
+	employeeDao := employeeimp.GetInstance(c.Request.Context())
+	recruitmentPlan, err := employeeDao.GetRecruitmentPlanByID(ID)
+	if err != nil {
+		log.Printf("Error fetching recruitment plan: %v", err)
+		util.NewError(c, http.StatusInternalServerError, err)
+		c.JSON(http.StatusInternalServerError, "get recruitment plan error")
+		return
+	}
+
+	c.JSON(http.StatusOK, recruitmentPlan)
+}
+
+func InsertRecruitmentPlan(c *gin.Context) {
+	var rp model.RecruitmentPlan
+	if err := c.ShouldBindJSON(&rp); err != nil {
+		log.Printf("Error binding JSON: %v", err)
+		util.NewError(c, http.StatusBadRequest, err)
+		c.JSON(http.StatusBadRequest, "bind recruitment plan error")
+		return
+	}
+	employeeDao := employeeimp.GetInstance(c.Request.Context())
+	id, err := employeeDao.InstRecruitmentPlan(rp)
+	if err != nil {
+		log.Printf("Error inserting recruitment plan: %v", err)
+		util.NewError(c, http.StatusInternalServerError, err)
+		c.JSON(http.StatusInternalServerError, "insert recruitment plan error")
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"id": id})
+}
+
+func DeleteRecruitmentPlan(c *gin.Context) {
+	id := c.Param("id")
+	employeeDao := employeeimp.GetInstance(c.Request.Context())
+	err := employeeDao.DeleteRecruitmentPlan(id)
+	if err != nil {
+		log.Printf("Error deleting recruitment plan by ID: %v", err)
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, "Success")
 }

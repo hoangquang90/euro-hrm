@@ -43,4 +43,8 @@ type Employee interface {
 	SearchChangesEmployee(fromDate time.Time, toDate time.Time, typeReport string) ([]model.ChangesEmployee, error)
 	SearchHRMWorkReport(fromDate time.Time, toDate time.Time, tyeReport string) ([]model.Employee, error)
 	SearchHRMResignReport(fromDate time.Time, toDate time.Time, tyeReport string) ([]model.Employee, error)
+	GetRecruitmentPlan(year int) ([]model.RecruitmentPlan, error)
+	GetRecruitmentPlanByID(id string) (model.RecruitmentPlan, error)
+	InstRecruitmentPlan(rp model.RecruitmentPlan) (string, error)
+	DeleteRecruitmentPlan(id string) error
 }
