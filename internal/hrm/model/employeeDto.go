@@ -393,3 +393,80 @@ func (r RecruitmentPlan) MarshalJSON() ([]byte, error) {
 	}
 	return json.Marshal(aux)
 }
+
+type HRTraining struct {
+	ID                  string    `json:"id"`
+	TrainingDate        time.Time `json:"training_date,omitempty"`
+	TrainingType        string    `json:"training_type,omitempty"`
+	WorkLocation        *string   `json:"work_location,omitempty"`
+	Department          *string   `json:"department,omitempty"`
+	Content             *string   `json:"content,omitempty"`
+	RequiredQuantity    *int      `json:"required_quantity,omitempty"`
+	ParticipantQuantity *int      `json:"participant_quantity,omitempty"`
+	AttachFileName      *string   `json:"attach_file_name,omitempty"`
+	AttachFilePath      *string   `json:"attach_file_path,omitempty"`
+	CurrentStatus       *string   `json:"current_status,omitempty"`
+	IssueDifficulty     *string   `json:"issue_difficulty,omitempty"`
+	Solution            *string   `json:"solution,omitempty"`
+	Proposal            *string   `json:"proposal,omitempty"`
+}
+
+func (r HRTraining) MarshalJSON() ([]byte, error) {
+	type Alias HRTraining
+	aux := struct {
+		Alias
+		WorkLocation        string `json:"work_location,omitempty"`
+		Department          string `json:"department,omitempty"`
+		Content             string `json:"content,omitempty"`
+		RequiredQuantity    string `json:"required_quantity,omitempty"`
+		ParticipantQuantity string `json:"participant_quantity,omitempty"`
+		AttachFileName      string `json:"attach_file_name,omitempty"`
+		AttachFilePath      string `json:"attach_file_path,omitempty"`
+		CurrentStatus       string `json:"current_status,omitempty"`
+		IssueDifficulty     string `json:"issue_difficulty,omitempty"`
+		Solution            string `json:"solution,omitempty"`
+		Proposal            string `json:"proposal,omitempty"`
+	}{
+		Alias:               (Alias)(r),
+		WorkLocation:        derefStr(r.WorkLocation),
+		Department:          derefStr(r.Department),
+		Content:             derefStr(r.Content),
+		RequiredQuantity:    derefInt(r.RequiredQuantity),
+		ParticipantQuantity: derefInt(r.ParticipantQuantity),
+		AttachFileName:      derefStr(r.AttachFileName),
+		AttachFilePath:      derefStr(r.AttachFilePath),
+		CurrentStatus:       derefStr(r.CurrentStatus),
+		IssueDifficulty:     derefStr(r.IssueDifficulty),
+		Solution:            derefStr(r.Solution),
+		Proposal:            derefStr(r.Proposal),
+	}
+	return json.Marshal(aux)
+}
+
+type MedicalHistory struct {
+	MedicalHistoryID string    `json:"medical_history_id,omitempty"`
+	InsuranceID      string    `json:"insurance_id,omitempty"`
+	ExamDate         time.Time `json:"exam_date,omitempty"`
+	Province         *string   `json:"province,omitempty"`
+	MedicalFacility  *string   `json:"medical_facility,omitempty"`
+	ExamLevel        *string   `json:"exam_level,omitempty"`
+	ExamReason       *string   `json:"exam_reason,omitempty"`
+}
+
+func (r MedicalHistory) MarshalJSON() ([]byte, error) {
+	type Alias MedicalHistory
+	aux := struct {
+		Alias
+		Province        string `json:"province,omitempty"`
+		MedicalFacility string `json:"medical_facility,omitempty"`
+		ExamLevel       string `json:"exam_level,omitempty"`
+		ExamReason      string `json:"exam_reason,omitempty"`
+	}{
+		Alias:           (Alias)(r),
+		Province:        derefStr(r.Province),
+		MedicalFacility: derefStr(r.MedicalFacility),
+		ExamLevel:       derefStr(r.ExamLevel),
+		ExamReason:      derefStr(r.ExamReason),
+	}
+	return json.Marshal(aux)
+}

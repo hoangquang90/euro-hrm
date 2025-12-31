@@ -260,7 +260,7 @@ func (e *EmployeeImp) InstEmployee(emp model.Employee) (string, error) {
 	return id, nil
 }
 
-func (e *EmployeeImp) InsertRelatives(relatives []model.Relative) (string, error) {
+func (e *EmployeeImp) InstRelatives(relatives []model.Relative) (string, error) {
 	query := "select hrm.insert_relative($1,$2,$3,$4,$5,$6)"
 	tx, err := dbhrm.Pool.BeginTx(e.ctx, pgx.TxOptions{})
 	if err != nil {
@@ -291,7 +291,7 @@ func (e *EmployeeImp) InsertRelatives(relatives []model.Relative) (string, error
 	return "", nil
 }
 
-func (e *EmployeeImp) InsertEmergencyContacts(contacts []model.Relative) (string, error) {
+func (e *EmployeeImp) InstEmergencyContacts(contacts []model.Relative) (string, error) {
 	query := "select hrm.insert_emergency($1,$2,$3,$4,$5,$6)"
 	tx, err := dbhrm.Pool.BeginTx(e.ctx, pgx.TxOptions{})
 	if err != nil {
@@ -322,7 +322,7 @@ func (e *EmployeeImp) InsertEmergencyContacts(contacts []model.Relative) (string
 	return "", nil
 }
 
-func (e *EmployeeImp) InsertCertificates(certificates []model.Certificate) (string, error) {
+func (e *EmployeeImp) InstCertificates(certificates []model.Certificate) (string, error) {
 	query := "select hrm.insert_certificate($1,$2,$3,$4,$5,$6,$7)"
 	tx, err := dbhrm.Pool.BeginTx(e.ctx, pgx.TxOptions{})
 	if err != nil {
@@ -352,7 +352,7 @@ func (e *EmployeeImp) InsertCertificates(certificates []model.Certificate) (stri
 	return "", nil
 }
 
-func (e *EmployeeImp) InsertSalaries(salaries model.Salary) (string, error) {
+func (e *EmployeeImp) InstSalaries(salaries model.Salary) (string, error) {
 	var id string
 	query := "select hrm.insert_salary($1,$2,$3,$4,$5,$6,$7,$8,$9)"
 	args := []interface{}{
@@ -385,7 +385,7 @@ func (e *EmployeeImp) InsertSalaries(salaries model.Salary) (string, error) {
 	return id, nil
 }
 
-func (e *EmployeeImp) InsertCareerHistories(careerHistories []model.CareerHistory) (string, error) {
+func (e *EmployeeImp) InstCareerHistories(careerHistories []model.CareerHistory) (string, error) {
 	query := "select hrm.insert_career_history($1,$2,$3,$4,$5,$6)"
 	tx, err := dbhrm.Pool.BeginTx(e.ctx, pgx.TxOptions{})
 	if err != nil {
@@ -414,7 +414,7 @@ func (e *EmployeeImp) InsertCareerHistories(careerHistories []model.CareerHistor
 	return "", nil
 }
 
-func (e *EmployeeImp) InsertPerformanceEvaluations(performanceEvaluations []model.PerformanceEvaluation) (string, error) {
+func (e *EmployeeImp) InstPerformanceEvaluations(performanceEvaluations []model.PerformanceEvaluation) (string, error) {
 	query := "select hrm.insert_performance_evaluation($1,$2,$3,$4,$5,$6,$7)"
 	tx, err := dbhrm.Pool.BeginTx(e.ctx, pgx.TxOptions{})
 	if err != nil {
@@ -444,7 +444,7 @@ func (e *EmployeeImp) InsertPerformanceEvaluations(performanceEvaluations []mode
 	return "", nil
 }
 
-func (e *EmployeeImp) InsertRewardDiscipline(rds []model.RewardDiscipline) (string, error) {
+func (e *EmployeeImp) InstRewardDiscipline(rds []model.RewardDiscipline) (string, error) {
 	query := "select hrm.insert_reward_discipline($1,$2,$3,$4,$5,$6,$7,$8)"
 	tx, err := dbhrm.Pool.BeginTx(e.ctx, pgx.TxOptions{})
 	if err != nil {
@@ -475,7 +475,7 @@ func (e *EmployeeImp) InsertRewardDiscipline(rds []model.RewardDiscipline) (stri
 	return "", nil
 }
 
-func (e *EmployeeImp) InsertContractHistories(rds model.ContractHistory) (string, error) {
+func (e *EmployeeImp) InstContractHistories(rds model.ContractHistory) (string, error) {
 	var id string
 	query := "select hrm.insert_contract_history($1,$2,$3,$4,$5,$6,$7,$8)"
 	args := []interface{}{
@@ -1301,4 +1301,259 @@ func (e *EmployeeImp) DeleteRecruitmentPlan(id string) error {
 		return err
 	}
 	return nil
+}
+
+func (e *EmployeeImp) GetHRTraining(year int) ([]model.HRTraining, error) {
+	var lstHRTrainings []model.HRTraining
+	query := "select hrm.get_hr_training($1)"
+	tx, err := dbhrm.Pool.BeginTx(e.ctx, pgx.TxOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		if err != nil {
+			tx.Rollback(e.ctx)
+		} else {
+			tx.Commit(e.ctx)
+		}
+	}()
+	row := tx.QueryRow(e.ctx, query, year)
+	var cursor string
+	err = row.Scan(&cursor)
+	if err != nil {
+		log.Printf("Error execute", err)
+		return nil, err
+	}
+	rows, err := tx.Query(e.ctx, "FETCH ALL "+pq.QuoteIdentifier(cursor)+";")
+	defer func() {
+		if rows != nil {
+			rows.Close()
+		}
+	}()
+	if err != nil {
+		log.Printf("Error FETCH refCurser: %v", err)
+	}
+	for rows.Next() {
+		hr := model.HRTraining{}
+		err := rows.Scan(&hr.ID,
+			&hr.TrainingDate,
+			&hr.TrainingType,
+			&hr.WorkLocation,
+			&hr.Department,
+			&hr.Content,
+			&hr.CurrentStatus,
+			&hr.IssueDifficulty,
+			&hr.Solution,
+			&hr.Proposal)
+		if err != nil {
+			fmt.Println("Error scanning row: ", err)
+			return nil, err
+		}
+		lstHRTrainings = append(lstHRTrainings, hr)
+	}
+
+	if err := rows.Err(); err != nil {
+		fmt.Println("Error iterating rows in SearchHRMResignReport: ", err)
+		return nil, err
+	}
+	return lstHRTrainings, nil
+}
+
+func (e *EmployeeImp) GetHRTrainingByID(id string) (model.HRTraining, error) {
+	var hr model.HRTraining
+	query := "select hrm.get_hr_training_by_id($1)"
+	tx, err := dbhrm.Pool.BeginTx(e.ctx, pgx.TxOptions{})
+	if err != nil {
+		return model.HRTraining{}, err
+	}
+
+	defer func() {
+		if err != nil {
+			tx.Rollback(e.ctx)
+		} else {
+			tx.Commit(e.ctx)
+		}
+	}()
+	row := tx.QueryRow(e.ctx, query, id)
+	var cursor string
+	err = row.Scan(&cursor)
+	if err != nil {
+		log.Printf("Error execute", err)
+		return model.HRTraining{}, err
+	}
+	rows, err := tx.Query(e.ctx, "FETCH ALL "+pq.QuoteIdentifier(cursor)+";")
+	defer func() {
+		if rows != nil {
+			rows.Close()
+		}
+	}()
+	if err != nil {
+		log.Printf("Error FETCH refCurser: %v", err)
+	}
+	for rows.Next() {
+		err := rows.Scan(&hr.ID,
+			&hr.TrainingDate,
+			&hr.TrainingType,
+			&hr.WorkLocation,
+			&hr.Department,
+			&hr.Content,
+			&hr.RequiredQuantity,
+			&hr.ParticipantQuantity,
+			&hr.AttachFileName,
+			&hr.CurrentStatus,
+			&hr.IssueDifficulty,
+			&hr.Solution,
+			&hr.Proposal)
+		if err != nil {
+			fmt.Println("Error scanning row: ", err)
+			return model.HRTraining{}, err
+		}
+	}
+
+	if err := rows.Err(); err != nil {
+		fmt.Println("Error iterating rows in SearchHRMResignReport: ", err)
+		return model.HRTraining{}, err
+	}
+	return hr, nil
+}
+
+func (e *EmployeeImp) InstHRTraining(hrt model.HRTraining) (string, error) {
+	var id string
+	query := "select hrm.insert_hr_training($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)"
+	args := []interface{}{
+		hrt.ID,
+		hrt.TrainingDate,
+		hrt.TrainingType,
+		hrt.WorkLocation,
+		hrt.Department,
+		hrt.Content,
+		hrt.RequiredQuantity,
+		hrt.ParticipantQuantity,
+		hrt.AttachFileName,
+		hrt.AttachFilePath,
+		hrt.CurrentStatus,
+		hrt.IssueDifficulty,
+		hrt.Solution,
+		hrt.Proposal,
+	}
+	tx, err := dbhrm.Pool.BeginTx(e.ctx, pgx.TxOptions{})
+	if err != nil {
+		return "", err
+	}
+	defer func() {
+		if tx != nil {
+			tx.Commit(e.ctx)
+		}
+	}()
+	row := tx.QueryRow(e.ctx, query, args...)
+	if err := row.Scan(&id); err != nil {
+		log.Printf("Error execute: %v", err)
+		return "", err
+	}
+	return id, nil
+}
+
+func (e *EmployeeImp) DeleteHRTraining(id string) error {
+	query := "select hrm.delete_hr_training_by_id($1)"
+	tx, err := dbhrm.Pool.BeginTx(e.ctx, pgx.TxOptions{})
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback(e.ctx)
+		} else {
+			tx.Commit(e.ctx)
+		}
+	}()
+	_, err = tx.Exec(e.ctx, query, id)
+	if err != nil {
+		log.Printf("Error execute: %v", err)
+		return err
+	}
+	return nil
+}
+
+func (e *EmployeeImp) GetMedicalHistoryByID(id string) ([]model.MedicalHistory, error) {
+	var lstMedicalHistory []model.MedicalHistory
+	query := "select hrm.get_medical_history_by_id($1)"
+	tx, err := dbhrm.Pool.BeginTx(e.ctx, pgx.TxOptions{})
+	if err != nil {
+		return []model.MedicalHistory{}, err
+	}
+
+	defer func() {
+		if err != nil {
+			tx.Rollback(e.ctx)
+		} else {
+			tx.Commit(e.ctx)
+		}
+	}()
+	row := tx.QueryRow(e.ctx, query, id)
+	var cursor string
+	err = row.Scan(&cursor)
+	if err != nil {
+		log.Printf("Error execute", err)
+		return []model.MedicalHistory{}, err
+	}
+	rows, err := tx.Query(e.ctx, "FETCH ALL "+pq.QuoteIdentifier(cursor)+";")
+	defer func() {
+		if rows != nil {
+			rows.Close()
+		}
+	}()
+	if err != nil {
+		log.Printf("Error FETCH refCurser: %v", err)
+	}
+	for rows.Next() {
+		var mh model.MedicalHistory
+		err := rows.Scan(&mh.MedicalHistoryID,
+			&mh.InsuranceID,
+			&mh.ExamDate,
+			&mh.Province,
+			&mh.MedicalFacility,
+			&mh.ExamLevel,
+			&mh.ExamReason)
+		lstMedicalHistory = append(lstMedicalHistory, mh)
+		if err != nil {
+			fmt.Println("Error scanning row: ", err)
+			return []model.MedicalHistory{}, err
+		}
+	}
+
+	if err := rows.Err(); err != nil {
+		fmt.Println("Error iterating rows in GetMedicalHistoryByID: ", err)
+		return []model.MedicalHistory{}, err
+	}
+	return lstMedicalHistory, nil
+}
+
+func (e *EmployeeImp) InstMedicalHistory(mh model.MedicalHistory) (string, error) {
+	var id string
+	query := "select hrm.insert_medical_history($1,$2,$3,$4,$5,$6,$7)"
+	args := []interface{}{
+		mh.MedicalHistoryID,
+		mh.InsuranceID,
+		mh.ExamDate,
+		mh.Province,
+		mh.MedicalFacility,
+		mh.ExamLevel,
+		mh.ExamReason,
+	}
+	tx, err := dbhrm.Pool.BeginTx(e.ctx, pgx.TxOptions{})
+	if err != nil {
+		return "", err
+	}
+	defer func() {
+		if tx != nil {
+			tx.Commit(e.ctx)
+		}
+	}()
+	row := tx.QueryRow(e.ctx, query, args...)
+	if err := row.Scan(&id); err != nil {
+		log.Printf("Error execute: %v", err)
+		return "", err
+	}
+	return id, nil
 }

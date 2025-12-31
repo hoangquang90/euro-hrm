@@ -49,7 +49,6 @@ func SearchEmployeeByID(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, "get employee by ID error")
 		return
 	}
-	log.Printf("employee list: %v", lstEmployee)
 	c.JSON(http.StatusOK, lstEmployee)
 }
 
@@ -120,7 +119,7 @@ func UpdateRelatives(c *gin.Context) {
 	}
 	employeeDao := employeeimp.GetInstance(c.Request.Context())
 	if emp != nil {
-		_, err := employeeDao.InsertRelatives(emp)
+		_, err := employeeDao.InstRelatives(emp)
 		if err != nil {
 			log.Printf("Error inserting relatives: %v", err)
 			util.NewError(c, http.StatusInternalServerError, err)
@@ -141,7 +140,7 @@ func UpdateEmergencyContacts(c *gin.Context) {
 	}
 	employeeDao := employeeimp.GetInstance(c.Request.Context())
 	if emp != nil {
-		_, err := employeeDao.InsertEmergencyContacts(emp)
+		_, err := employeeDao.InstEmergencyContacts(emp)
 		if err != nil {
 			log.Printf("Error inserting emergency contacts: %v", err)
 			util.NewError(c, http.StatusInternalServerError, err)
@@ -194,7 +193,7 @@ func UpdateSalaries(c *gin.Context) {
 		emp.FileName = nil
 	}
 	employeeDao := employeeimp.GetInstance(c.Request.Context())
-	id, err := employeeDao.InsertSalaries(emp)
+	id, err := employeeDao.InstSalaries(emp)
 	if err != nil {
 		log.Printf("Error inserting salaries: %v", err)
 		util.NewError(c, http.StatusInternalServerError, err)
@@ -214,7 +213,7 @@ func UpdateCertificates(c *gin.Context) {
 	}
 	employeeDao := employeeimp.GetInstance(c.Request.Context())
 	if emp != nil {
-		_, err := employeeDao.InsertCertificates(emp)
+		_, err := employeeDao.InstCertificates(emp)
 		if err != nil {
 			log.Printf("Error inserting certificates: %v", err)
 			util.NewError(c, http.StatusInternalServerError, err)
@@ -234,7 +233,7 @@ func UpdateCareerHistories(c *gin.Context) {
 	}
 	employeeDao := employeeimp.GetInstance(c.Request.Context())
 	if emp != nil {
-		_, err := employeeDao.InsertCareerHistories(emp)
+		_, err := employeeDao.InstCareerHistories(emp)
 		if err != nil {
 			log.Printf("Error inserting career histories: %v", err)
 			util.NewError(c, http.StatusInternalServerError, err)
@@ -255,7 +254,7 @@ func UpdatePerformanceEvaluations(c *gin.Context) {
 	}
 	employeeDao := employeeimp.GetInstance(c.Request.Context())
 	if emp != nil {
-		_, err := employeeDao.InsertPerformanceEvaluations(emp)
+		_, err := employeeDao.InstPerformanceEvaluations(emp)
 		if err != nil {
 			log.Printf("Error inserting performance evaluations: %v", err)
 			util.NewError(c, http.StatusInternalServerError, err)
@@ -276,7 +275,7 @@ func UpdateRewardDisciplines(c *gin.Context) {
 	}
 	employeeDao := employeeimp.GetInstance(c.Request.Context())
 	if emp != nil {
-		_, err := employeeDao.InsertRewardDiscipline(emp)
+		_, err := employeeDao.InstRewardDiscipline(emp)
 		if err != nil {
 			log.Printf("Error inserting reward disciplines: %v", err)
 			util.NewError(c, http.StatusInternalServerError, err)
@@ -330,7 +329,7 @@ func UpdateContractHistories(c *gin.Context) {
 	}
 
 	employeeDao := employeeimp.GetInstance(c.Request.Context())
-	id, err := employeeDao.InsertContractHistories(emp)
+	id, err := employeeDao.InstContractHistories(emp)
 	if err != nil {
 		log.Printf("Error inserting contract histories: %v", err)
 		util.NewError(c, http.StatusInternalServerError, err)
@@ -650,9 +649,9 @@ func SearchRecruitmentPlan(c *gin.Context) {
 }
 
 func SearchRecruitmentPlanByID(c *gin.Context) {
-	ID := c.Query("id")
+	id := c.Param("id")
 	employeeDao := employeeimp.GetInstance(c.Request.Context())
-	recruitmentPlan, err := employeeDao.GetRecruitmentPlanByID(ID)
+	recruitmentPlan, err := employeeDao.GetRecruitmentPlanByID(id)
 	if err != nil {
 		log.Printf("Error fetching recruitment plan: %v", err)
 		util.NewError(c, http.StatusInternalServerError, err)
@@ -692,4 +691,148 @@ func DeleteRecruitmentPlan(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, "Success")
+}
+
+func SearchHRTraining(c *gin.Context) {
+	lstHRTraining := make([]model.HRTraining, 0)
+	yearStr := c.Query("year")
+	var err error
+	var year int
+	if yearStr != "" {
+		year, err = strconv.Atoi(yearStr)
+		if err != nil {
+			log.Printf("Error parsing year: %v", err)
+			util.NewError(c, http.StatusBadRequest, err)
+			c.JSON(http.StatusBadRequest, "invalid year format")
+			return
+		}
+	}
+	employeeDao := employeeimp.GetInstance(c.Request.Context())
+	lstHRTraining, err = employeeDao.GetHRTraining(year)
+	if err != nil {
+		log.Printf("Error fetching HR training: %v", err)
+		util.NewError(c, http.StatusInternalServerError, err)
+		c.JSON(http.StatusInternalServerError, "get HR training error")
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"hr_trainings": lstHRTraining})
+}
+
+func SearchHRTrainingByID(c *gin.Context) {
+	id := c.Param("id")
+	log.Println("Searching HR Training by ID:", id)
+	employeeDao := employeeimp.GetInstance(c.Request.Context())
+	hrTraining, err := employeeDao.GetHRTrainingByID(id)
+	if err != nil {
+		log.Printf("Error fetching HR training: %v", err)
+		util.NewError(c, http.StatusInternalServerError, err)
+		c.JSON(http.StatusInternalServerError, "get HR training error")
+		return
+	}
+
+	c.JSON(http.StatusOK, hrTraining)
+}
+
+func InsertHRTraining(c *gin.Context) {
+	// Parse multipart form (optional)
+	c.Request.ParseMultipartForm(32 << 20)
+
+	// Try to get file, but do not fail if not present
+	file, err := c.FormFile("file")
+	var savedFilePath, fileName string
+	if err == nil && file != nil {
+		savePath := config.GetString("file_pathhrm") + file.Filename
+		log.Printf("Saving file to: %s", savePath)
+		if err := c.SaveUploadedFile(file, savePath); err != nil {
+			log.Printf("Error saving uploaded file: %v", err)
+			c.JSON(http.StatusInternalServerError, "save file error")
+			return
+		}
+		savedFilePath = savePath
+		fileName = file.Filename
+	}
+
+	// Lấy hrmTraining JSON string từ form-data
+	hrmTraining := c.PostForm("hrm_training")
+	if hrmTraining == "" {
+		log.Printf("hrm_training form field is empty")
+		c.JSON(http.StatusBadRequest, "hrm_training field empty")
+		return
+	}
+
+	var hrm model.HRTraining
+	if err := json.Unmarshal([]byte(hrmTraining), &hrm); err != nil {
+		log.Printf("Error parsing HR training JSON: %v", err)
+		c.JSON(http.StatusBadRequest, "invalid HR training json")
+		return
+	}
+
+	// Only set ImagePath/ImageName if file was uploaded
+	if savedFilePath != "" {
+		hrm.AttachFilePath = &savedFilePath
+	} else {
+		hrm.AttachFilePath = nil
+	}
+	if fileName != "" {
+		hrm.AttachFileName = &fileName
+	} else {
+		hrm.AttachFileName = nil
+	}
+	employeeDao := employeeimp.GetInstance(c.Request.Context())
+	id, err := employeeDao.InstHRTraining(hrm)
+	if err != nil {
+		log.Printf("Error inserting HR training: %v", err)
+		util.NewError(c, http.StatusInternalServerError, err)
+		c.JSON(http.StatusInternalServerError, "insert HR training error")
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"id": id})
+}
+
+func DeleteHRTraining(c *gin.Context) {
+	id := c.Param("id")
+	employeeDao := employeeimp.GetInstance(c.Request.Context())
+	err := employeeDao.DeleteHRTraining(id)
+	if err != nil {
+		log.Printf("Error deleting HR training by ID: %v", err)
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, "Success")
+}
+
+func SearchMedicalHistoryByID(c *gin.Context) {
+	id := c.Param("id")
+	employeeDao := employeeimp.GetInstance(c.Request.Context())
+	medicalHistory, err := employeeDao.GetMedicalHistoryByID(id)
+	if err != nil {
+		log.Printf("Error fetching medical history by ID: %v", err)
+		util.NewError(c, http.StatusInternalServerError, err)
+		c.JSON(http.StatusInternalServerError, "get medical history by ID error")
+		return
+	}
+
+	c.JSON(http.StatusOK, medicalHistory)
+}
+
+func InsertMedicalHistory(c *gin.Context) {
+	var emp model.MedicalHistory
+	if err := c.ShouldBindJSON(&emp); err != nil {
+		log.Printf("Error binding JSON: %v", err)
+		util.NewError(c, http.StatusBadRequest, err)
+		c.JSON(http.StatusBadRequest, "bind medical history error")
+		return
+	}
+	employeeDao := employeeimp.GetInstance(c.Request.Context())
+	if emp != (model.MedicalHistory{}) {
+		_, err := employeeDao.InstMedicalHistory(emp)
+		if err != nil {
+			log.Printf("Error inserting medical history: %v", err)
+			util.NewError(c, http.StatusInternalServerError, err)
+			c.JSON(http.StatusInternalServerError, "insert medical history error")
+			return
+		}
+	}
+	c.JSON(200, "Success")
 }
