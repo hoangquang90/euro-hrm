@@ -470,3 +470,36 @@ func (r MedicalHistory) MarshalJSON() ([]byte, error) {
 	}
 	return json.Marshal(aux)
 }
+
+type AttendanceDevices struct {
+	Id         string  `json:"id"`
+	DevicesId  string  `json:"devices_id"`
+	DeviceName *string `json:"device_name"`
+	Location   *string `json:"location"`
+	Serial     *string `json:"serial"`
+	IP         *string `json:"ip"`
+	Port       *string `json:"port"`
+	Status     *string `json:"status"`
+}
+
+func (r AttendanceDevices) MarshalJSON() ([]byte, error) {
+	type Alias AttendanceDevices
+	aux := struct {
+		Alias
+		DeviceName string `json:"device_name"`
+		Location   string `json:"location"`
+		Serial     string `json:"serial"`
+		IP         string `json:"ip"`
+		Port       string `json:"port"`
+		Status     string `json:"status"`
+	}{
+		Alias:      (Alias)(r),
+		DeviceName: derefStr(r.DeviceName),
+		Location:   derefStr(r.Location),
+		Serial:     derefStr(r.Serial),
+		IP:         derefStr(r.IP),
+		Port:       derefStr(r.Port),
+		Status:     derefStr(r.Status),
+	}
+	return json.Marshal(aux)
+}
